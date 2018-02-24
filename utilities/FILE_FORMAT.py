@@ -1,0 +1,5 @@
+EXCEL = '.xlsx'
+HTML = '.html'
+XML = '.xml'
+CSV = '.csv'
+JSON = '.json'
