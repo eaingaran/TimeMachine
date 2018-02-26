@@ -8,5 +8,5 @@ setup(
     license='MIT License',
     author='Aingaran Elango',
     author_email='eaingaran@gmail.com',
-    description='A databse testing tool that keeps track of data across releases.'
+    description='A database testing tool that keeps track of data across releases.'
 )

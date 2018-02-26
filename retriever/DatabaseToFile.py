@@ -2,13 +2,19 @@ import os
 
 from pymysql import DatabaseError
 
+from utilities import DATABASE_TYPE
 from utilities import Path
 
 
-def save_query_to_file(connection, query, file):
+def save_query_to_file(connection, query, file, database_type):
     os.makedirs(os.path.dirname(Path.get_base_path() + file), exist_ok=True)
 
-    cursor = connection.cursor()
+    if DATABASE_TYPE.MY_SQL == database_type:
+        cursor = connection.cursor()
+    elif DATABASE_TYPE.SQLite == database_type:
+        cursor = connection
+    else:
+        cursor = connection
 
     with open(Path.get_base_path() + file, "w+") as out_file:
         try:

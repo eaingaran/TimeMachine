@@ -1,10 +1,12 @@
 [
   {
-    "Expected": "b,3\n",
-    "Actual": "b,4\n"
+    "LineNumber": "2",
+    "Expected": "b;3",
+    "Actual": "b;4"
   },
   {
-    "Expected": "c,6",
-    "Actual": "c,1"
+    "LineNumber": "3",
+    "Expected": "c;6",
+    "Actual": "d;1"
   }
 ]
