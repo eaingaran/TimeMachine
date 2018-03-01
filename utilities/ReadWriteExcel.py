@@ -1,3 +1,5 @@
+import os
+
 from openpyxl import Workbook
 from openpyxl import load_workbook
 
@@ -8,7 +10,7 @@ def read_cell(book_name, sheet_name, cell):
     try:
         work_book = load_workbook(Path.get_base_path() + book_name)
         sheet = work_book[sheet_name]
-        value = sheet[cell].value()
+        value = sheet[cell].value
         print("Values of {} in sheet {} of book {} is {}".format(cell, sheet_name, book_name, value))
         return value
     except Exception as e:
@@ -36,6 +38,7 @@ def write_cell(book_name, sheet_name, cell, value):
 
 def create_excel_workbook(book_name, sheet_name):
     try:
+        os.makedirs(os.path.dirname(Path.get_base_path() + book_name), exist_ok=True)
         work_book = Workbook()
         work_sheet = work_book.active
         work_sheet.title = sheet_name
