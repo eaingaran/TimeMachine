@@ -1,23 +1,23 @@
+import logging
 import tkinter
 from datetime import datetime
-from tkinter import Button
-from tkinter import Radiobutton
-from tkinter import Tk
-from tkinter import messagebox
-from tkinter import scrolledtext
+from tkinter import Tk, Button, messagebox, Radiobutton, scrolledtext
 
 from archiever import FileArchiver
 from comparer import FileComparision
-from database_expert import MySQL
-from database_expert import SQLite
-from interactor import Database
-from interactor import Scenario
+from database_expert import MySQL, SQLite
+from interactor import Scenario, Database
 from reporter import GenerateReport
 from retriever import DatabaseToFile
-from utilities import DATABASE_TYPE
-from utilities import Path
-from utilities import RUN_MODE
-from utilities import ReadWriteExcel
+from utilities import ReadWriteExcel, RUN_MODE, DATABASE_TYPE, Path
+
+timestamp = str(datetime.now().day) + '_' + str(datetime.now().month) + '_' + str(datetime.now().year) + '_' + \
+            str(datetime.now().hour) + '_' + str(datetime.now().minute) + '_' + \
+            str(datetime.now().second)
+logging.basicConfig(filename=Path.get_base_path() + 'logs\\TimeMachine_log_{}.log'.format(timestamp),
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 
 def open_user_interface():
@@ -58,14 +58,13 @@ def open_user_interface():
         pass
 
 
-def application_start(mode, logger):
+def application_start(mode, scroll_text):
     modes = {'1': RUN_MODE.CREATE_ACTUAL, '2': RUN_MODE.CREATE_EXPECTED,
              '3': RUN_MODE.CREATE_ACTUAL_COMPARE_EXPECTED, '4': RUN_MODE.COMPARE_EXPECTED_ACTUAL}
-    microsecond = datetime.now().microsecond
-    result_excel_name = 'Results\\TimeMachine_Result_{}.xlsx'.format(microsecond)
+    result_excel_name = 'Results\\TimeMachine_Result_{}.xlsx'.format(timestamp)
     result_excel_sheet_name = 'Summary'
     ReadWriteExcel.create_excel_workbook(result_excel_name, result_excel_sheet_name)
-    logger.insert(tkinter.INSERT, 'Scenario,result,error_row_count,error_count' + '\n')
+    scroll_text.insert(tkinter.INSERT, 'Scenario,result,error_row_count,error_count' + '\n')
     ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A1', 'Scenario')
     ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'B1', 'result')
     ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'C1', 'error_row_count')
@@ -79,7 +78,7 @@ def application_start(mode, logger):
         while ReadWriteExcel.read_cell(application_config_file, application_scenario_sheet,
                                        'A' + str(row_number)) is not None:
             try:
-                scenario = Scenario.Scenario(application_config_file, application_scenario_sheet, row_number)
+                scenario = Scenario.Scenario(application_config_file, application_scenario_sheet, str(row_number))
                 if RUN_MODE.CREATE_ACTUAL == modes[str(mode)]:
                     create_file(scenario, database)
                     FileArchiver.archive_file(scenario.actual_file, scenario.name, 'Actual')
@@ -98,33 +97,36 @@ def application_start(mode, logger):
                     scenario.error_row_count, scenario.error_count = compare_file(scenario)
                     FileArchiver.archive_file(scenario.result_file, scenario.name, 'Result')
                 scenario.compute_result()
-                logger.insert(tkinter.INSERT, '{},{},{},{}'.format(scenario.name, scenario.result,
-                                                                   scenario.error_row_count,
-                                                                   scenario.error_count) + '\n')
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + row_number, scenario.name)
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'B' + row_number, scenario.result)
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'C' + row_number,
-                                          scenario.error_row_count)
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'D' + row_number,
-                                          scenario.error_count)
+                scroll_text.insert(tkinter.INSERT, '{},{},{},{}'.format(scenario.name, scenario.result,
+                                                                        str(scenario.error_row_count),
+                                                                        str(scenario.error_count)) + '\n')
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + str(row_number),
+                                          scenario.name)
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'B' + str(row_number),
+                                          scenario.result)
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'C' + str(row_number),
+                                          str(scenario.error_row_count))
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'D' + str(row_number),
+                                          str(scenario.error_count))
                 row_number += 1
             except Exception as e:
                 row_number += 1
-                print(e)
+                logger.error(e)
                 if scenario.name is not None:
-                    logger.insert(tkinter.INSERT, '{},Error,N/A,N/A'.format(scenario.name) + '\n')
-                    ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + row_number,
+                    scroll_text.insert(tkinter.INSERT, '{},Error,N/A,N/A'.format(scenario.name) + '\n')
+                    ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + str(row_number),
                                               scenario.name)
                 else:
-                    logger.insert(tkinter.INSERT, '{},Error,N/A,N/A'.format(row_number) + '\n')
-                    ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + row_number, row_number)
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'B' + row_number, 'Error')
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'C' + row_number,
+                    scroll_text.insert(tkinter.INSERT, '{},Error,N/A,N/A'.format(row_number) + '\n')
+                    ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'A' + str(row_number),
+                                              str(row_number))
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'B' + str(row_number), 'Error')
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'C' + str(row_number),
                                           'N/A')
-                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'D' + row_number, 'N/A')
+                ReadWriteExcel.write_cell(result_excel_name, result_excel_sheet_name, 'D' + str(row_number), 'N/A')
                 continue
     except Exception as e:
-        print(e)
+        logger.error(e)
         messagebox.showerror('Failed', 'Operation Failed\n' + str(e))
     messagebox.showinfo('Success', 'Operation Completed Successfully')
 
@@ -140,7 +142,7 @@ def create_file(scenario, database):
             connection = None
         DatabaseToFile.save_query_to_file(connection, scenario.query, scenario.actual_file, database.database_type)
     except Exception as e:
-        print("Couldn't get the data from database.", e)
+        logger.error("Couldn't get the data from database.", e)
         raise
 
 
@@ -156,10 +158,10 @@ def compare_file(scenario):
             return GenerateReport.write_to_report(temp_result_file, exp_header.rstrip(), scenario.result_format,
                                                   scenario.result_file)
         else:
-            print("Header didn't match.\nExpected : {}\nActual : {}".format(exp_header, act_header))
+            logger.warning("Header didn't match.\nExpected : {}\nActual : {}".format(exp_header, act_header))
             return -1, 0
     except Exception as e:
-        print("Couldn't compare the given files.", e)
+        logger.error("Couldn't compare the given files.", e)
         raise
 
 

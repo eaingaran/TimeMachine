@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from utilities import Path
@@ -6,7 +7,7 @@ from utilities import Path
 
 def compare(old_file, new_file, compare_result):
     try:
-        print(os.path.dirname(Path.get_base_path() + compare_result))
+        logging.debug(os.path.dirname(Path.get_base_path() + compare_result))
         os.makedirs(os.path.dirname(Path.get_base_path() + compare_result), exist_ok=True)
         data = []
         line_number = 1
@@ -20,4 +21,4 @@ def compare(old_file, new_file, compare_result):
                 line_number += 1
             json.dump(data, result)
     except Exception as e:
-        print(e)
+        logging.error(e)

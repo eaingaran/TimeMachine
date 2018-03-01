@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 from shutil import copyfile
 
@@ -13,4 +14,4 @@ def archive_file(file, scenario_name, archive_file_type):
                                                                      "Archive"), scenario_name),
                                            str(datetime.date.today())), archive_file_type) + tail)
     except Exception as e:
-        print("archive failed", e)
+        logging.error("archive failed", e)

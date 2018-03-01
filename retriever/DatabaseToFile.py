@@ -1,9 +1,9 @@
+import logging
 import os
 
 from pymysql import DatabaseError
 
-from utilities import DATABASE_TYPE
-from utilities import Path
+from utilities import Path, DATABASE_TYPE
 
 
 def save_query_to_file(connection, query, file, database_type):
@@ -25,9 +25,9 @@ def save_query_to_file(connection, query, file, database_type):
                 out_file.write(row[0])
                 row = cursor.fetchone()
         except DatabaseError as e:
-            print("Error: Problem with database", e)
+            logging.error("Error: Problem with database", e)
         except Exception as e:
-            print("Error: Problem with something", e)
+            logging.error("Error: Problem with something", e)
         finally:
             cursor.close()
     return "File Written"
