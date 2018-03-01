@@ -19,5 +19,4 @@ def test_mysql():
     # disconnect from server
     db.close()
 
-
 test_mysql()
