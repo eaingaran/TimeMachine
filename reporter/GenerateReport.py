@@ -9,7 +9,7 @@ from utilities import FILE_FORMAT, ReadWriteExcel, Path
 logger = logging.getLogger(__name__)
 
 
-def write_to_report(result_file, header_string, report_format, out_file_name, excel_sheet_name='result'):
+def write_to_report(result_file, header_string, report_format, out_file_name, excel_sheet_name='Result'):
     if FILE_FORMAT.EXCEL == report_format or FILE_FORMAT.EXCEL_WITH_MACRO == report_format:
         return generate_excel_report(result_file, header_string, out_file_name, excel_sheet_name, report_format)
     elif FILE_FORMAT.HTML == report_format:

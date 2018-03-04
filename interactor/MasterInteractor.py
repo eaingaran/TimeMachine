@@ -1,9 +1,9 @@
 import logging
+import os
 import tkinter
 from datetime import datetime
 from tkinter import Tk, Button, messagebox, Radiobutton, scrolledtext
 
-from archiever import FileArchiver
 from comparer import FileComparision
 from database_expert import MySQL, SQLite
 from interactor import Scenario, Database
@@ -81,21 +81,21 @@ def application_start(mode, scroll_text):
                 scenario = Scenario.Scenario(application_config_file, application_scenario_sheet, str(row_number))
                 if RUN_MODE.CREATE_ACTUAL == modes[str(mode)]:
                     create_file(scenario, database)
-                    FileArchiver.archive_file(scenario.actual_file, scenario.name, 'Actual')
+                    # FileArchiver.archive_file(scenario.actual_file, scenario.name, 'Actual')
                 elif RUN_MODE.CREATE_EXPECTED == modes[str(mode)]:
                     res = messagebox.askyesno("Are you sure?",
                                               "This option will overwrite any existing expected files.")
                     if res:
-                        create_file(scenario, database)
-                        FileArchiver.archive_file(scenario.expected_file, scenario.name, 'Expected')
+                        create_file(scenario, database, scenario.expected_file)
+                        # FileArchiver.archive_file(scenario.expected_file, scenario.name, 'Expected')
                 elif RUN_MODE.COMPARE_EXPECTED_ACTUAL == modes[str(mode)]:
                     scenario.error_row_count, scenario.error_count = compare_file(scenario)
-                    FileArchiver.archive_file(scenario.result_file, scenario.name, 'Result')
+                    # FileArchiver.archive_file(scenario.result_file, scenario.name, 'Result')
                 elif RUN_MODE.CREATE_ACTUAL_COMPARE_EXPECTED == modes[str(mode)]:
-                    create_file(scenario, database)
-                    FileArchiver.archive_file(scenario.actual_file, scenario.name, 'Actual')
+                    create_file(scenario, database, scenario.actual_file)
+                    # FileArchiver.archive_file(scenario.actual_file, scenario.name, 'Actual')
                     scenario.error_row_count, scenario.error_count = compare_file(scenario)
-                    FileArchiver.archive_file(scenario.result_file, scenario.name, 'Result')
+                    # FileArchiver.archive_file(scenario.result_file, scenario.name, 'Result')
                 scenario.compute_result()
                 scroll_text.insert(tkinter.INSERT, '{},{},{},{}'.format(scenario.name, scenario.result,
                                                                         str(scenario.error_row_count),
@@ -131,16 +131,16 @@ def application_start(mode, scroll_text):
     messagebox.showinfo('Success', 'Operation Completed Successfully')
 
 
-def create_file(scenario, database):
+def create_file(scenario, database, file):
     try:
         if DATABASE_TYPE.MY_SQL == database.database_type:
             connection = MySQL.get_connection(database.host_name, database.user_name, database.password,
                                               database.database_name)
         elif DATABASE_TYPE.SQLite == database.database_type:
-            connection = SQLite.get_connection(database.database_name)
+            connection = SQLite.get_connection(Path.get_base_path() + database.database_name)
         else:
             connection = None
-        DatabaseToFile.save_query_to_file(connection, scenario.query, scenario.actual_file, database.database_type)
+        DatabaseToFile.save_query_to_file(connection, scenario.query, file, database.database_type)
     except Exception as e:
         logger.error("Couldn't get the data from database.", e)
         raise
@@ -163,6 +163,9 @@ def compare_file(scenario):
     except Exception as e:
         logger.error("Couldn't compare the given files.", e)
         raise
+    finally:
+        if os.path.exists(Path.get_base_path() + "temp_res.json"):
+            os.remove(Path.get_base_path() + "temp_res.json")
 
 
 open_user_interface()
