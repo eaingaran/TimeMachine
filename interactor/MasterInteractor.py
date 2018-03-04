@@ -14,7 +14,7 @@ from utilities import ReadWriteExcel, RUN_MODE, DATABASE_TYPE, Path
 timestamp = str(datetime.now().day) + '_' + str(datetime.now().month) + '_' + str(datetime.now().year) + '_' + \
             str(datetime.now().hour) + '_' + str(datetime.now().minute) + '_' + \
             str(datetime.now().second)
-logging.basicConfig(filename=Path.get_base_path() + 'logs\\TimeMachine_log_{}.log'.format(timestamp),
+logging.basicConfig(filename=Path.get_base_path() + 'logs/TimeMachine_log_{}.log'.format(timestamp),
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def open_user_interface():
 def application_start(mode, scroll_text):
     modes = {'1': RUN_MODE.CREATE_ACTUAL, '2': RUN_MODE.CREATE_EXPECTED,
              '3': RUN_MODE.CREATE_ACTUAL_COMPARE_EXPECTED, '4': RUN_MODE.COMPARE_EXPECTED_ACTUAL}
-    result_excel_name = 'Results\\TimeMachine_Result_{}.xlsx'.format(timestamp)
+    result_excel_name = 'Results/TimeMachine_Result_{}.xlsx'.format(timestamp)
     result_excel_sheet_name = 'Summary'
     ReadWriteExcel.create_excel_workbook(result_excel_name, result_excel_sheet_name)
     scroll_text.insert(tkinter.INSERT, 'Scenario,result,error_row_count,error_count' + '\n')
